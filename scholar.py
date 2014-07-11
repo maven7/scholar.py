@@ -1255,16 +1255,24 @@ scholar.py -c 5 -a "albert einstein" -t --none "quantum theory" --after 1970"""
         options.count = min(options.count, ScholarConf.MAX_PAGE_RESULTS)
         query.set_num_page_results(options.count)
 
-    querier.send_query(query)
+    index = 0
+    while True:
+        query.set_start(index)
+        querier.send_query(query)
 
-    if options.csv:
-        csv(querier)
-    elif options.csv_header:
-        csv(querier, header=True)
-    elif options.citation is not None:
-        citation_export(querier)
-    else:
-        txt(querier, with_globals=options.txt_globals)
+        if options.csv:
+            csv(querier)
+        elif options.csv_header:
+            csv(querier, header=True)
+        elif options.citation is not None:
+            citation_export(querier)
+        else:
+            txt(querier, with_globals=options.txt_globals)
+
+            if len(querier.articles) < 20:
+                # we've reached the end of the list
+                break
+            index += 20
 
     if options.cookie_file:
         querier.save_cookies()
