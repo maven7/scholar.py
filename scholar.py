@@ -740,6 +740,7 @@ class SearchScholarQuery(ScholarQuery):
         self.timeframe = [None, None]
         self.include_patents = True
         self.include_citations = True
+        self.start_index = 0
 
     def set_words(self, words):
         """Sets words that *all* must be found in the result."""
@@ -763,6 +764,13 @@ class SearchScholarQuery(ScholarQuery):
         only.
         """
         self.scope_title = title_only
+
+    def set_start_index(self, start_index):
+        """
+        Sets the start index of the query.  Usually, this would be a multiple
+        of the size of the search result (probably 10 or 20).
+        """
+        self.start_index = start_index
 
     def set_author(self, author):
         """Sets names that must be on the result's author list."""
@@ -820,7 +828,8 @@ class SearchScholarQuery(ScholarQuery):
                    'yhi': self.timeframe[1] or '',
                    'patents': '0' if self.include_patents else '1',
                    'citations': '0' if self.include_citations else '1',
-                   'num': self.num_results or ScholarConf.MAX_PAGE_RESULTS}
+                   'num': self.num_results or ScholarConf.MAX_PAGE_RESULTS,
+                   'start': self.start_index}
 
         for key, val in urlargs.items():
             urlargs[key] = quote(encode(val))
@@ -1263,7 +1272,7 @@ scholar.py -c 5 -a "albert einstein" -t --none "quantum theory" --after 1970"""
         if index + ScholarConf.MAX_PAGE_RESULTS > num_results:
             query.set_num_page_results(num_results - index)
 
-        query.set_start(index)
+        query.set_start_index(index)
         querier.send_query(query)
 
         if options.csv:
